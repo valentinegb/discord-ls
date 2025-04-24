@@ -4,3 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+discord-rich-presence = "0.2.5"
+tower-lsp = "0.20.0"
