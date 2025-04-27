@@ -17,8 +17,11 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
+      - name: Install Rust on ARM64
+        if: ${{ runner.arch == 'ARM64' }}
+        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
       - name: Build
-        run: cargo build --verbose --release
+        run: ${{ (matrix.os == 'windows-11-arm' && '~\.cargo\bin\') || '' }}cargo build --verbose --release
       - uses: actions/upload-artifact@v4
         with:
           name: discord-ls-${{ runner.os }}-${{ runner.arch }}
