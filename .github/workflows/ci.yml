@@ -1,0 +1,36 @@
+name: CI
+on: [pull_request, push]
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+      - name: Build
+        run: cargo build --verbose --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: discord-ls-${{ runner.os }}-${{ runner.arch }}
+          path: |
+            target/release/discord-ls
+            target/release/discord-ls.exe
+          if-no-files-found: error
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-24.04-arm
+          - ubuntu-latest
+          - windows-11-arm
+          - windows-latest
