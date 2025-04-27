@@ -5,4 +5,6 @@ edition = "2024"
 
 [dependencies]
 discord-rich-presence = "0.2.5"
+tokio = { version = "1.44.2", features = ["rt", "rt-multi-thread", "io-std", "macros"] }
 tower-lsp = "0.20.0"
+tracing = "0.1.41"
