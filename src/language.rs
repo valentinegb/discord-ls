@@ -6,6 +6,7 @@ use std::{
 pub(super) enum Language {
     Rust,
     Toml,
+    Nix,
 }
 
 impl FromStr for Language {
@@ -15,6 +16,7 @@ impl FromStr for Language {
         match s.rsplit_once('.').ok_or("string missing extension")?.1 {
             "rs" => Ok(Self::Rust),
             "toml" => Ok(Self::Toml),
+            "nix" => Ok(Self::Nix),
             _ => Err("no known extensions matched string".to_string()),
         }
     }
@@ -28,6 +30,7 @@ impl fmt::Display for Language {
             match self {
                 Language::Rust => "Rust",
                 Language::Toml => "TOML",
+                Language::Nix => "Nix",
             },
         )
     }
