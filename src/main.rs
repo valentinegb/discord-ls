@@ -1,12 +1,15 @@
 mod language;
 mod tracing;
 
-use std::str::FromStr;
+use std::{
+    str::FromStr,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use ::tracing::{debug, error, info, subscriber};
 use discord_rich_presence::{
     DiscordIpc, DiscordIpcClient,
-    activity::{Activity, Assets},
+    activity::{Activity, Assets, Timestamps},
 };
 use language::Language;
 use tower_lsp::{
@@ -22,6 +25,7 @@ struct DiscordLanguageServer {
     language_client: tower_lsp::Client,
     discord: tokio::sync::Mutex<DiscordIpcClient>,
     last_edited_file: tokio::sync::Mutex<Option<String>>,
+    started_timestamp: i64,
 }
 
 #[tower_lsp::async_trait]
@@ -34,7 +38,8 @@ impl LanguageServer for DiscordLanguageServer {
             self.discord.lock().await.set_activity(
                 Activity::new()
                     .assets(Assets::new().large_image("zed").large_text("Zed"))
-                    .details("Idling"),
+                    .details("Idling")
+                    .timestamps(Timestamps::new().start(self.started_timestamp)),
             ),
         )?;
 
@@ -131,12 +136,13 @@ impl LanguageServer for DiscordLanguageServer {
                 None => "in an unknown project",
             };
 
-            if let Err(err) = self
-                .discord
-                .lock()
-                .await
-                .set_activity(Activity::new().assets(assets).details(details).state(state))
-            {
+            if let Err(err) = self.discord.lock().await.set_activity(
+                Activity::new()
+                    .assets(assets)
+                    .details(details)
+                    .state(state)
+                    .timestamps(Timestamps::new().start(self.started_timestamp)),
+            ) {
                 error!("Failed to update activity: {err}");
             }
         }
@@ -168,6 +174,10 @@ async fn main() {
                     .expect("should not be possible to fail to create Discord IPC client"),
             ),
             last_edited_file: tokio::sync::Mutex::new(None),
+            started_timestamp: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("system time is incorrect")
+                .as_secs() as i64,
         }
     });
 
