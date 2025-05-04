@@ -3,6 +3,7 @@ mod tracing;
 
 use std::{
     str::FromStr,
+    sync::OnceLock,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -25,7 +26,7 @@ struct DiscordLanguageServer {
     language_client: tower_lsp::Client,
     discord: tokio::sync::Mutex<DiscordIpcClient>,
     last_edited_file: tokio::sync::Mutex<Option<String>>,
-    started_timestamp: i64,
+    first_activity_timestamp: OnceLock<i64>,
 }
 
 #[tower_lsp::async_trait]
@@ -34,14 +35,6 @@ impl LanguageServer for DiscordLanguageServer {
         debug!("Received initialization request");
         to_jsonrpc_err(self.discord.lock().await.connect())?;
         info!("Connected to Discord successfully");
-        to_jsonrpc_err(
-            self.discord.lock().await.set_activity(
-                Activity::new()
-                    .assets(Assets::new().large_image("zed").large_text("Zed"))
-                    .details("Idling")
-                    .timestamps(Timestamps::new().start(self.started_timestamp)),
-            ),
-        )?;
 
         Ok(InitializeResult {
             capabilities: ServerCapabilities {
@@ -141,7 +134,14 @@ impl LanguageServer for DiscordLanguageServer {
                     .assets(assets)
                     .details(details)
                     .state(state)
-                    .timestamps(Timestamps::new().start(self.started_timestamp)),
+                    .timestamps(Timestamps::new().start(
+                        *self.first_activity_timestamp.get_or_init(|| {
+                            SystemTime::now()
+                                .duration_since(UNIX_EPOCH)
+                                .expect("system time is incorrect")
+                                .as_secs() as i64
+                        }),
+                    )),
             ) {
                 error!("Failed to update activity: {err}");
             }
@@ -174,10 +174,7 @@ async fn main() {
                     .expect("should not be possible to fail to create Discord IPC client"),
             ),
             last_edited_file: tokio::sync::Mutex::new(None),
-            started_timestamp: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .expect("system time is incorrect")
-                .as_secs() as i64,
+            first_activity_timestamp: OnceLock::new(),
         }
     });
 
