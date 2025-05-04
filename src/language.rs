@@ -7,6 +7,7 @@ pub(super) enum Language {
     Rust,
     Toml,
     Nix,
+    Json,
 }
 
 impl FromStr for Language {
@@ -17,6 +18,7 @@ impl FromStr for Language {
             "rs" => Ok(Self::Rust),
             "toml" => Ok(Self::Toml),
             "nix" => Ok(Self::Nix),
+            "json" | "jsonc" => Ok(Self::Json),
             _ => Err("no known extensions matched string".to_string()),
         }
     }
@@ -31,6 +33,7 @@ impl fmt::Display for Language {
                 Language::Rust => "Rust",
                 Language::Toml => "TOML",
                 Language::Nix => "Nix",
+                Language::Json => "JSON",
             },
         )
     }

@@ -12,7 +12,7 @@ point of [LSP] is to be able to extend a *wide range* of editors, so I want to
 do that with this project, to be able to add Discord integration to your
 favorite editor, whatever that may be. I haven't managed that yet though, this
 is only a very simple proof of concept that shows your editor as "Zed" no matter
-what it actually is and only supports Rust, TOML, and Nix files.
+what it actually is and only supports Rust, TOML, Nix, and JSON files.
 <br />
 <br />
 <p align="center">
