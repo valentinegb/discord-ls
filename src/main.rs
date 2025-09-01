@@ -112,12 +112,11 @@ impl LanguageServer for DiscordLanguageServer {
                         .inspect_err(|err| error!("Failed to determine language: {err}"))
                         .ok()
                 })
-                .map(|language| language.to_string())
-                .map(|language| (language.to_lowercase(), language));
+                .map(|language| (format!("{language:?}").to_lowercase(), language.to_string()));
             let mut assets = Assets::new().large_image("zed").large_text("Zed");
 
-            if let Some((small_image, small_text)) = &language {
-                assets = assets.small_image(small_image).small_text(small_text);
+            if let Some((language_image, language_name)) = &language {
+                assets = assets.small_image(language_image).small_text(language_name);
             }
 
             let details = match relative_file_path {

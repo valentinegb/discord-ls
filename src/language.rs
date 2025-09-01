@@ -3,11 +3,13 @@ use std::{
     str::FromStr,
 };
 
+#[derive(Debug)]
 pub(super) enum Language {
     Rust,
     Toml,
     Nix,
     Json,
+    Cpp,
 }
 
 impl FromStr for Language {
@@ -19,6 +21,8 @@ impl FromStr for Language {
             "toml" => Ok(Self::Toml),
             "nix" => Ok(Self::Nix),
             "json" | "jsonc" => Ok(Self::Json),
+            "C" | "cc" | "cpp" | "cxx" | "c++" | "h" | "H" | "hh" | "hpp" | "hxx" | "h++"
+            | "cppm" | "ixx" => Ok(Self::Cpp),
             _ => Err("no known extensions matched string".to_string()),
         }
     }
@@ -34,6 +38,7 @@ impl fmt::Display for Language {
                 Language::Toml => "TOML",
                 Language::Nix => "Nix",
                 Language::Json => "JSON",
+                Language::Cpp => "C++",
             },
         )
     }
